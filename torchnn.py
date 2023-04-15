@@ -78,27 +78,57 @@ loss_fn = nn.CrossEntropyLoss() # Our Loss Function.
 
 
 # Creating the Training Function
-
-# Main Guard
-if __name__ == "__main__":
+def training_function():
     # train for 10 epoch
     for epoch in range(10):
         for batch in dataset:
-            x,y = batch # to unpack the data
-            x,y = x.to(device), y.to(device) # sending the unpacked data to the your device.
-            yhat = clf(x) # to make a prediction
-            loss = loss_fn(yhat, y) # to claculate our loss
+            x, y = batch  # to unpack the data
+            x, y = x.to(device), y.to(device)  # sending the unpacked data to the your device.
+            yhat = clf(x)  # to make a prediction
+            loss = loss_fn(yhat, y)  # to claculate our loss
 
             # Applying Backpropagation
-            opt.zero_grad() # to zero out the gradient
-            loss.backward() # calculate the gradients, backwards.
-            opt.step() # taking a step to apply gradient descent
-
+            opt.zero_grad()  # to zero out the gradient
+            loss.backward()  # calculate the gradients, backwards.
+            opt.step()  # taking a step to apply gradient descent
 
         # Print out the loss for every batch.
-        print(f'Epoch: {epoch +1} -- Loss {loss.item()}')
-
+        print(f'Epoch: {epoch + 1} -- Loss {loss.item()}')
 
         # Saving the model to be used on its own.
         with open('model_1.pt', 'wb') as f:
             save(clf.state_dict(), f)
+
+
+# Use the model_1.pt to predict the test images.
+def pred_model():
+    # open up the model pt file
+    with open('model_1.pt', 'rb') as f:
+        # Load the weights into the classifier
+        clf.load_state_dict(load(f))
+        # Load the test images
+        test_image = 'img_3.jpg'
+        img = Image.open(test_image)
+        # Convert to tensor
+        img_tensor = ToTensor()(img).unsqueeze(0).to(device)
+
+        """ 
+        The test images are:
+            img_1 is '2'
+            img_2 is '0'
+            img_3 is '9'
+        """
+
+        # Print prediction to screen.
+        print(torch.argmax(clf(img_tensor))) # Classifer (image tensor) prediction
+
+
+
+
+# Main Guard
+if __name__ == "__main__":
+   # Call the training function
+   # training_function() # Commented so that it doesn't runt the training again.
+   # Call the prediction model.
+   pred_model()
+
